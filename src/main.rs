@@ -6,7 +6,7 @@ fn index() -> &'static str {
      "Hello, world!" 
 }
 
-#[get("/add_music")]
+#[post("/add_music")]
 fn add_music() -> &'static str {
     "ADD_MUSIC_LOGIC"
 }
