@@ -4,7 +4,12 @@ version = "0.1.0"
 authors = ["swpark6 <sewon1234@naver.com>", "supernovel <ekfueh@naver.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[workspace]
+members = [
+    "youtube_api"
+]
 
 [dependencies]
 slack = "0.22.0"
+youtube_api = { path = "./youtube_api" }
