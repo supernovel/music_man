@@ -1,6 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use tokio_test::assert_ok;
+use tokio_test::{assert_ok, block_on};
+use std::env;
 
 const API_DOAMIN: &'static str = "https://www.googleapis.com/youtube/v3";
 const PLAYLIST_ITEMS_PATH: &'static str = "/playlistItems";
@@ -81,21 +82,21 @@ pub struct PlaylistItemPageInfo {
 }
 
 pub struct YMusicOptions {
-    key: String,
+    access_token: String,
 }
 
 pub struct YMusicController {
-    playlistId: Option<String>,
+    playlist_id: Option<String>,
     client: reqwest::Client,
     options: YMusicOptions,
 }
 
 impl YMusicController {
-    pub fn new(key: String) -> YMusicController {
+    pub fn new(access_token: String) -> YMusicController {
         Self {
-            playlistId: None,
+            playlist_id: None,
             client: reqwest::Client::new(),
-            options: YMusicOptions { key },
+            options: YMusicOptions { access_token },
         }
     }
 
@@ -111,7 +112,7 @@ impl YMusicController {
             kind: String::from("youtube#playlistItem"),
             id: None,
             snippet: Option::Some(Snippet {
-                playlist_id: self.playlistId.clone(),
+                playlist_id: self.playlist_id.clone(),
                 resource_id: Option::Some(Id {
                     kind: String::from("youtube#video"),
                     video_id: Option::Some(id.into()),
@@ -132,7 +133,7 @@ impl YMusicController {
         let result = self
             .client
             .post([API_DOAMIN, PLAYLIST_ITEMS_PATH].join("").as_str())
-            .bearer_auth(self.options.key.as_str())
+            .bearer_auth(&self.options.access_token)
             .query(&["part", "snippet"])
             .json(&item)
             .send()
@@ -147,10 +148,10 @@ impl YMusicController {
         let result = self
             .client
             .get([API_DOAMIN, PLAYLIST_ITEMS_PATH].join("").as_str())
-            .bearer_auth(self.options.key.as_str())
+            .bearer_auth(&self.options.access_token)
             .query(&[
                 ("part", "snippet"),
-                ("playlistId", self.playlistId.clone().unwrap().as_str()),
+                ("playlistId", self.playlist_id.clone().unwrap().as_str()),
             ])
             .send()
             .await?
@@ -165,21 +166,28 @@ impl YMusicController {
 mod tests {
     use super::*;
 
+    fn get_access_token() -> String{
+        match env::var("ACCESS_TOKEN") {
+            Ok(v) => v,
+            Err(_) => panic!("Incorrect ACCESS_TOKEN.")
+        }
+    }
+
     #[test]
     fn music_search() {
-        let controller = YMusicController::new(String::from(""));
+        let controller = YMusicController::new(get_access_token());
         assert_eq!(vec!["1234"], controller.search(String::from("1234")));
     }
 
-    #[tokio::test]
-    async fn music_add() {
-        let controller = YMusicController::new(String::from(""));
-        assert_ok!(controller.add("jLUa6brtC-c").await);
+    #[test]
+    fn music_add() {
+        let controller = YMusicController::new(get_access_token());
+        assert_ok!(block_on(controller.add("HhWAQDZX-Vg")));
     }
 
-    #[tokio::test]
-    async fn get_music_list() {
-        let controller = YMusicController::new(String::from(""));
-        assert_ok!(controller.get_list().await);
+    #[test]
+    fn get_music_list() {
+        let controller = YMusicController::new(get_access_token());
+        assert_ok!(block_on(controller.get_list()));
     }
 }
