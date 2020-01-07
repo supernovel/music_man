@@ -6,8 +6,8 @@
 /// https://github.com/Byron/google-apis-rs 라이브러리 및 예제 사용
 /// 
 /// 리스트 조회 및 업데이트에는 oauth2 인증 토큰이 필수.
-/// cli를 통해 주소를 받고 구글 계정 인증을 해야함.
-/// 위 라이브러리에 구현되어있음.
+/// Todo. 인증 관련 엔드포인트 및 로직 구현 필요.
+/// 
 extern crate hyper;
 extern crate hyper_rustls;
 extern crate yup_oauth2 as oauth2;
